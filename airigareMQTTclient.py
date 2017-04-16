@@ -71,27 +71,32 @@ def on_connect(mosq, obj, rc):
 def on_message(mosq, obj, msg):
 	if msg.payload == "1":
 		print("Turning on...")
+		mqttc.publish(sysid + "/loposwitch/RX", "Turning on...")
 		try:
 			global AIrigarePump
 			AIrigarePump.turnOn() 
 		except Exception:
 			print("Not Connected to BLE")
+			mqttc.publish(sysid + "/loposwitch/RX", "Not Connected")
 			pass
 
 		sT = time()
 	
 	if msg.payload == "0":
 		print("Turning off...")
+		mqttc.publish(sysid + "/loposwitch/RX", "Turning off...")
 		try:
 			global AIrigarePump
 			AIrigarePump.turnOff() 
 		except Exception:
+			mqttc.publish(sysid + "/loposwitch/RX", "Not Connected")
 			print("Not Connected to BLE")
 			pass
 		
 		global sT	
 		wT = time() - sT
 		print("I was watering " + str(round(wT,0)) + " seconds")
+		mqttc.publish(sysid + "/loposwitch/RX", "I was watering " + str(round(wT,0)) + " seconds")
     	
 	print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
 
@@ -123,10 +128,10 @@ url = urlparse.urlparse(url_str)
 mqttc.connect(url.hostname, url.port)
 
 # Start subscribe, with QoS level 0
-mqttc.subscribe(sysid + "/loposwitch", 0)
+mqttc.subscribe(sysid + "/loposwitch/TX", 0)
 
 # Publish a message
-mqttc.publish(sysid + "/loposwitch", "Hello")
+mqttc.publish(sysid + "/loposwitch/RX", "Hello")
 
 # Continue the network loop, exit when an error occurs
 while True:
@@ -137,9 +142,9 @@ while True:
 	print("rc: " + str(rc))
 	mqttc.connect(url.hostname, url.port)
 	# Start subscribe, with QoS level 0
-	mqttc.subscribe(sysid + "/loposwitch", 0)
+	mqttc.subscribe(sysid + "/loposwitch/TX", 0)
 
 	# Publish a message
-	mqttc.publish(sysid + "/loposwitch", "Hello")
+	mqttc.publish(sysid + "/loposwitch/RX", "Hello")
 
 #mqttc.loop_forever()
