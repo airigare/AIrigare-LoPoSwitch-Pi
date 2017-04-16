@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os, urlparse, pexpect, sys
 import paho.mqtt.client as paho
 from time import time

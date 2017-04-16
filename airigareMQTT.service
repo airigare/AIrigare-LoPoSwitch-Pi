@@ -1,0 +1,11 @@
+[Unit]
+Description=AIRigare MQTT Client
+After=multi-user.target
+ 
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /home/pi/AIrigare-LoPoSwitch-Pi/airigareMQTTclient.py
+Restart=on-abort
+ 
+[Install]
+WantedBy=multi-user.target
