@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import os, urlparse, pexpect, sys
+import pexpect, sys, json, select, time
 import paho.mqtt.client as paho
-from time import time
 
 # Constants
 bluetooth_adr = "CB:FE:19:98:A0:EF"
@@ -19,38 +18,50 @@ def floatfromhex(h):
 
 class LoPoSwitch:
 
-    def __init__( self, bluetooth_adr ):
-        self.con = pexpect.spawn('gatttool -b ' + bluetooth_adr + ' --interactive -t random --listen')
-        self.con.expect('\[LE\]>', timeout=100)
-        print "Preparing to connect."
-        self.con.sendline('connect')
-        # test for success of connect
-	self.con.expect('Connection successful.*\[LE\]>')
-        # Earlier versions of gatttool returned a different message.  Use this pattern -
-        #self.con.expect('\[CON\].*>')
-        self.cb = {}
-	self.con.sendline('char-write-req 0x000e 0100')
-        self.cb = {}
-	return
+	def __init__( self, bluetooth_adr ):
+		self.con = pexpect.spawn('gatttool -b ' + bluetooth_adr + ' --interactive -t random --listen')
+		#self.con.logfile = open(self.file, "a") #Dissable for Python3
+		self.con.expect('\[LE\]>', timeout=100)
+		#print "Preparing to connect."
+		self.con.sendline('connect')
+		# test for success of connect
+		self.con.expect('Connection successful.*\[LE\]>')
+		# Earlier versions of gatttool returned a different message.  Use this pattern -
+		#self.con.expect('\[CON\].*>')
+		self.con.sendline('char-write-req 0x000e 0100')
+		self.con.expect('Characteristic value was written successfully')
+		return
 
     def turnOn(self):
-        cmd = 'char-write-cmd 0x000b 5231' #Write 'R1' to second attribute
-        print cmd
-        self.con.sendline( cmd )
-        #self.con.expect('\[CON\].*>')
-        self.cb = {}
-        return
+		self.con.sendline('connect') # Reconnect if not connected
+		self.cb = {}
+		self.con.sendline('char-write-req 0x000e 0100')
+		self.con.expect('Characteristic value was written successfully')
 
-    def turnOff(self):
-        cmd = 'char-write-cmd 0x000b 5230' #Write 'R0' to second attribute
-        print cmd
-        self.con.sendline( cmd )
-        return
+		cmd = 'char-write-cmd 0x000b 5231' #Write 'R1' to second attribute
+		#print cmd
+		self.con.sendline( cmd )
+		index = self.con.expect(['Notification handle = 0x000d value: ', 'Command Failed: Disconnected'])
+		if index == 0:
+			print("OK")
+		elif index == 1:
+			print("Disconnected")
+		return
 
-def writeLog(t):
-
-	print("Data logged successefully")
-	return -1
+	def turnOff(self):
+		self.con.sendline('connect') # Reconnect if not connected
+		self.con.sendline('char-write-req 0x000e 0100')
+		self.con.expect('Characteristic value was written successfully')
+		
+		cmd = 'char-write-cmd 0x000b 5230' #Write 'R0' to second attribute
+		#print cmd
+		self.con.sendline( cmd )
+		index = self.con.expect(['Notification handle = 0x000d value: ', 'Command Failed: Disconnected'])
+		if index == 0:
+			print("OK")
+		elif index == 1:
+			print("Disconnected")
+		return
 
 
 # Connect to BLE LoPoSwitch
