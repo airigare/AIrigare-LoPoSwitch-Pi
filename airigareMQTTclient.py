@@ -19,54 +19,42 @@ def floatfromhex(h):
 class LoPoSwitch:
 
 	def __init__( self, bluetooth_adr ):
+		r = 0
 		self.con = pexpect.spawn('gatttool -b ' + bluetooth_adr + ' --interactive -t random --listen')
 		#self.con.logfile = open(self.file, "a") #Dissable for Python3
 		self.con.expect('\[LE\]>', timeout=100)
 		#print "Preparing to connect."
 		self.con.sendline('connect')
 		# test for success of connect
-		self.con.expect('Connection successful.*\[LE\]>')
+		r = self.con.expect(['Connection successful.*\[LE\]>', pexpect.TIMEOUT])
+		print(r)
 		# Earlier versions of gatttool returned a different message.  Use this pattern -
 		#self.con.expect('\[CON\].*>')
 		self.con.sendline('char-write-req 0x000e 0100')
 		self.con.expect('Characteristic value was written successfully')
-		return
+		print(r)
 
-    def turnOn(self):
-		self.con.sendline('connect') # Reconnect if not connected
-		self.cb = {}
-		self.con.sendline('char-write-req 0x000e 0100')
-		self.con.expect('Characteristic value was written successfully')
-
+	def turnOn(self):
+		r = 0
 		cmd = 'char-write-cmd 0x000b 5231' #Write 'R1' to second attribute
-		#print cmd
 		self.con.sendline( cmd )
-		index = self.con.expect(['Notification handle = 0x000d value: ', 'Command Failed: Disconnected'])
-		if index == 0:
-			print("OK")
-		elif index == 1:
-			print("Disconnected")
-		return
+		r = self.con.expect(['Notification handle = 0x000d value: ', 'Command Failed: Disconnected'])
+		print(r)
+		return r
 
 	def turnOff(self):
-		self.con.sendline('connect') # Reconnect if not connected
-		self.con.sendline('char-write-req 0x000e 0100')
-		self.con.expect('Characteristic value was written successfully')
-		
+		r = 0
 		cmd = 'char-write-cmd 0x000b 5230' #Write 'R0' to second attribute
 		#print cmd
 		self.con.sendline( cmd )
-		index = self.con.expect(['Notification handle = 0x000d value: ', 'Command Failed: Disconnected'])
-		if index == 0:
-			print("OK")
-		elif index == 1:
-			print("Disconnected")
-		return
+		r = self.con.expect(['Notification handle = 0x000d value: ', 'Command Failed: Disconnected'])
+		print(r)
+		return r
 
 
 # Connect to BLE LoPoSwitch
 try:
-    AIrigarePump = LoPoSwitch(bluetooth_adr) 
+	AIrigarePump = LoPoSwitch(bluetooth_adr) 
 except Exception:
 	print("Not Connected to BLE")
 	pass
@@ -112,13 +100,13 @@ def on_message(mosq, obj, msg):
 	print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
 
 def on_publish(mosq, obj, mid):
-    print("mid: " + str(mid))
+	print("mid: " + str(mid))
 
 def on_subscribe(mosq, obj, mid, granted_qos):
-    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+	print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 def on_log(mosq, obj, level, string):
-    print(string)
+	print(string)
 
 mqttc = paho.Client()
 # Assign event callbacks
@@ -157,5 +145,3 @@ while True:
 
 	# Publish a message
 	mqttc.publish(sysid + "/loposwitch/RX", "Hello")
-
-#mqttc.loop_forever()
