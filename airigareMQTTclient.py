@@ -33,13 +33,11 @@ class LoPoSwitch:
 		self.con.sendline('connect')
 		# test for success of connect
 		r = self.con.expect(['Connection successful.*\[LE\]>', pexpect.TIMEOUT], timeout = self.pexpectCommandTimeOut)
-		print("Connection successful.*\[LE\]>'", r)
 		return r
 
 
 		self.con.sendline('char-write-req 0x000e 0100')
 		r = self.con.expect(['Characteristic value was written successfully', pexpect.TIMEOUT], timeout = self.pexpectCommandTimeOut)
-		print("Characteristic value was written successfully", r)
 		return r
 
 	def turnOn(self):
@@ -72,6 +70,15 @@ def on_connect(mosq, obj, rc):
 	print("rc: " + str(rc))
 
 def on_message(mosq, obj, msg):
+	if msg.payload == "Reconnect":
+		print("Reconnecting...")
+		r = AIrigarePump.connect()
+		if r == 0:
+			mqttc.publish(sysid + "/loposwitch/RX", "Reconnected")
+		else:
+			mqttc.publish(sysid + "/loposwitch/RX", "Failed")
+
+
 	if msg.payload == "1":
 		print("Turning on...")
 		mqttc.publish(sysid + "/loposwitch/RX", "Turning on...")
