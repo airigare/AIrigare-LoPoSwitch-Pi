@@ -101,7 +101,7 @@ def on_message(mosq, obj, msg):
 		if r == 0:
 			mqttc.publish(sysid + "/loposwitch/RX", "OK")
 			global sT	
-			waT = time.time() - sT
+			wT = time.time() - sT
 			print("I was watering " + str(round(wT,0)) + " seconds")
 			mqttc.publish(sysid + "/loposwitch/RX", "I was watering " + str(round(wT,0)) + " seconds")
 		elif r == 1:
