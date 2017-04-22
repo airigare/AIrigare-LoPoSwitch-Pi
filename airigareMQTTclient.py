@@ -60,7 +60,7 @@ class LoPoSwitch:
 AIrigarePump = LoPoSwitch(bluetooth_adr)
 
 # Define Variable to be able to count Pumping Time (Duration)
-sT = time.time()
+sT = 0
 
 
 # Define event callbacks
@@ -68,6 +68,7 @@ def on_connect(mosq, obj, rc):
 	print("rc: " + str(rc))
 
 def on_message(mosq, obj, msg):
+	global sT
 	if msg.payload == "Reconnect":
 		print("Reconnecting...")
 		r = AIrigarePump.connect()
@@ -86,6 +87,7 @@ def on_message(mosq, obj, msg):
 		r = AIrigarePump.turnOn()
 		if r == 0:
 			mqttc.publish(sysid + "/loposwitch/RX", "OK")
+			sT = time.time()
 		#elif r == 1:
 		else:
 			mqttc.publish(sysid + "/loposwitch/RX", "Not OK...")
@@ -98,7 +100,6 @@ def on_message(mosq, obj, msg):
 		r = AIrigarePump.turnOff()
 		if r == 0:
 			mqttc.publish(sysid + "/loposwitch/RX", "OK")
-			global sT	
 			wT = time.time() - sT
 			print("I was watering " + str(round(wT,0)) + " seconds")
 			mqttc.publish(sysid + "/loposwitch/RX", "I was watering " + str(round(wT,0)) + " seconds")
