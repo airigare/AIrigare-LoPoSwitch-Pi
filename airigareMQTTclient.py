@@ -33,9 +33,7 @@ class LoPoSwitch:
 		self.con.sendline('connect')
 		# test for success of connect
 		r = self.con.expect(['Connection successful.*\[LE\]>', pexpect.TIMEOUT], timeout = self.pexpectCommandTimeOut)
-		return r
-
-
+		
 		self.con.sendline('char-write-req 0x000e 0100')
 		r = self.con.expect(['Characteristic value was written successfully', '\[LE\]>', pexpect.TIMEOUT], timeout = self.pexpectCommandTimeOut)
 		return r
