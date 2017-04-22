@@ -37,7 +37,7 @@ class LoPoSwitch:
 
 
 		self.con.sendline('char-write-req 0x000e 0100')
-		r = self.con.expect(['Characteristic value was written successfully', pexpect.TIMEOUT], timeout = self.pexpectCommandTimeOut)
+		r = self.con.expect(['Characteristic value was written successfully', '\[LE\]>', pexpect.TIMEOUT], timeout = self.pexpectCommandTimeOut)
 		return r
 
 	def turnOn(self):
@@ -75,6 +75,8 @@ def on_message(mosq, obj, msg):
 		r = AIrigarePump.connect()
 		if r == 0:
 			mqttc.publish(sysid + "/loposwitch/RX", "Reconnected")
+		elif r == 1:
+			mqttc.publish(sysid + "/loposwitch/RX", "Connected")
 		else:
 			mqttc.publish(sysid + "/loposwitch/RX", "Failed")
 
