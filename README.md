@@ -24,7 +24,10 @@ sudo systemctl start airigareMQTT.service
  
 # Stop service
 sudo systemctl stop airigareMQTT.service
- 
+
+# Restart service
+sudo systemctl restart airigareMQTT.service
+
 # Check service's log
 sudo journalctl -f -u airigareMQTT.service
 ```
