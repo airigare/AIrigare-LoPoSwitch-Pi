@@ -4,7 +4,7 @@ import pexpect, sys, json, select, time, urlparse
 import paho.mqtt.client as paho
 
 # Constants
-bluetooth_adr = "CB:FE:19:98:A0:EF"
+bluetooth_adr = "e0:28:e6:d9:67:fd"
 sysid = "79cf6c22-dcc6-11e5-8e77-00113217113f"
 url_str = 'mqtt://mikmak.cc:1883'
 
